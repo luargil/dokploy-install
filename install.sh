@@ -71,9 +71,14 @@ install_dokploy() {
         echo "$ip"
     }
 
+    # get_private_ip() {
+    #     ip addr show | grep -E "inet (192\.168\.|10\.|172\.)" | head -n1 | awk '{print $2}' | cut -d/ -f1
+    # }
+
     get_private_ip() {
-        ip addr show | grep -E "inet (192\.168\.|10\.|172\.)" | head -n1 | awk '{print $2}' | cut -d/ -f1
+        ip route get 8.8.8.8 | awk '{print $7}' | head -n1
     }
+
 
     advertise_addr="${ADVERTISE_ADDR:-$(get_private_ip)}"
     if [ -z "$advertise_addr" ]; then
@@ -186,13 +191,28 @@ EOF
     BLUE="\033[0;34m"
     NC="\033[0m"
 
-    public_ip="${ADVERTISE_ADDR:-$(get_ip)}"
-    if echo "$public_ip" | grep -q ':'; then formatted_addr="[$public_ip]"; else formatted_addr="$public_ip"; fi
+    # public_ip="${ADVERTISE_ADDR:-$(get_ip)}"
+    # if echo "$public_ip" | grep -q ':'; then formatted_addr="[$public_ip]"; else formatted_addr="$public_ip"; fi
+
+    # echo ""
+    # printf "${GREEN}✅ Dokploy installed successfully${NC}\n"
+    # printf "${BLUE}Wait ~15s for services to be ready${NC}\n"
+    # printf "${YELLOW}Access: http://${formatted_addr}:3000${NC}\n\n"
+
+    private_ip="$(get_private_ip)"
+    public_ip="${ADVERTISE_ADDR:-$private_ip}"
+
+    if echo "$public_ip" | grep -q ':'; then
+        formatted_addr="[$public_ip]"
+    else
+        formatted_addr="$public_ip"
+    fi
 
     echo ""
     printf "${GREEN}✅ Dokploy installed successfully${NC}\n"
     printf "${BLUE}Wait ~15s for services to be ready${NC}\n"
     printf "${YELLOW}Access: http://${formatted_addr}:3000${NC}\n\n"
+
 }
 
 update_dokploy() {
